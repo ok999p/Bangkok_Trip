@@ -27,6 +27,18 @@ export function TransportOptionCard({
   onSelect,
 }: TransportOptionCardProps) {
   const [open, setOpen] = useState(false);
+  const hasUnresolvedCost = Boolean(option.unresolvedCostNote);
+  const hasNoKnownBaseFare = hasUnresolvedCost && option.totalCost === 0;
+  const totalCostText = hasUnresolvedCost
+    ? hasNoKnownBaseFare
+      ? "คำนวณไม่ได้จากข้อมูลที่มี (ต้องดูราคาหน้างาน)"
+      : `${option.totalCost} บาท + ค่าใช้จ่ายเพิ่มเติมหน้างาน`
+    : `${option.totalCost} บาท`;
+  const perPersonText = hasUnresolvedCost
+    ? hasNoKnownBaseFare
+      ? "คำนวณไม่ได้จากข้อมูลที่มี (ต้องดูราคาหน้างาน)"
+      : `${option.costPerPerson} บาท/คน + ค่าใช้จ่ายเพิ่มเติมหน้างาน`
+    : `${option.costPerPerson} บาท/คน`;
 
   return (
     <motion.article
@@ -87,13 +99,26 @@ export function TransportOptionCard({
                   เวลาเดินทาง: {option.time}
                 </span>
                 <span className="rounded-full bg-cyan-400/15 px-2 py-1 font-semibold text-cyan-200">
-                  ค่าเดินทางรวม: {option.totalCost} บาท
+                  ค่าเดินทางรวม: {totalCostText}
+                </span>
+                <span className="rounded-full bg-violet-400/15 px-2 py-1 font-semibold text-violet-200">
+                  ราคาต่อคน: {perPersonText}
                 </span>
               </div>
               <p className="text-sm leading-relaxed text-slate-300">{option.description}</p>
               {option.costFormula ? (
                 <p className="rounded-xl border border-cyan-300/25 bg-cyan-400/10 p-2 text-xs text-cyan-100">
                   สูตรคำนวณค่าใช้จ่าย: {option.costFormula}
+                </p>
+              ) : null}
+              {option.unresolvedCostNote ? (
+                <p className="rounded-xl border border-amber-300/20 bg-amber-400/10 p-2 text-xs leading-relaxed text-amber-100">
+                  หมายเหตุค่าใช้จ่าย: {option.unresolvedCostNote}
+                </p>
+              ) : null}
+              {option.unresolvedTimeNote ? (
+                <p className="rounded-xl border border-amber-300/20 bg-amber-400/10 p-2 text-xs leading-relaxed text-amber-100">
+                  หมายเหตุเวลา: {option.unresolvedTimeNote}
                 </p>
               ) : null}
               {option.stationSteps ? <StationStepper steps={option.stationSteps} /> : null}

@@ -30,6 +30,8 @@ export type TransportOption = {
   pricePerVan?: number;
   stationSteps?: StationStep[];
   costFormula?: string;
+  unresolvedCostNote?: string;
+  unresolvedTimeNote?: string;
 };
 
 export type TravelRoute = {
@@ -48,9 +50,7 @@ export type SelectedOptionByRoute = Record<string, TransportOptionType>;
 
 export const GROUP_SIZE = 15;
 export const GLOBAL_DISCLAIMER =
-  "ราคานี้เป็นการประมาณจากข้อมูลที่รวบรวมเมื่อวันที่ 18 มีนาคม 2026 ราคาและเวลาเดินทางจริงอาจแตกต่างได้ และผู้ขับอาจปฏิเสธงานตามเงื่อนไขหรือข้อกำหนดของแพลตฟอร์ม";
-
-const LAST_MILE_ESTIMATE = 10;
+  "หมายเหตุ (ข้อมูลวันที่ 18/03/2569): ราคาและเวลาไปถึงจริงของ Grab/Bolt ต้องดูหน้างานอีกครั้ง อาจมีการเปลี่ยนแปลง และคนขับอาจปฏิเสธรับงานหากผิดกฎหรือเงื่อนไขของแพลตฟอร์ม";
 
 export const DAY_COLORS: Record<1 | 2 | 3, string> = {
   1: "#22d3ee",
@@ -106,9 +106,9 @@ export const transportLocations: LocationPoint[] = [
 ];
 
 export const dayLabels: Record<1 | 2 | 3, string> = {
-  1: "วันที่ 1 - 23 มีนาคม",
-  2: "วันที่ 2 - 24 มีนาคม",
-  3: "วันที่ 3 - 25 มีนาคม",
+  1: "วันที่ 1 - 23/03/2569",
+  2: "วันที่ 2 - 24/03/2569",
+  3: "วันที่ 3 - 25/07/2569",
 };
 
 function round2(value: number) {
@@ -155,6 +155,8 @@ function createPublicOption(input: {
   perPersonCost: number;
   stationSteps: StationStep[];
   costFormula?: string;
+  unresolvedCostNote?: string;
+  unresolvedTimeNote?: string;
 }): TransportOption {
   const totalCost = input.perPersonCost * GROUP_SIZE;
 
@@ -170,6 +172,8 @@ function createPublicOption(input: {
     costPerPerson: input.perPersonCost,
     stationSteps: input.stationSteps,
     costFormula: input.costFormula,
+    unresolvedCostNote: input.unresolvedCostNote,
+    unresolvedTimeNote: input.unresolvedTimeNote,
   };
 }
 
@@ -177,7 +181,7 @@ export const travelRoutes: TravelRoute[] = [
   {
     id: "d1-airport-dorm",
     day: 1,
-    dayLabel: "23 มีนาคม 2026",
+    dayLabel: "23/03/2569",
     from: "สนามบินดอนเมือง",
     to: "หอพัก (SKSC)",
     title: "สนามบินดอนเมือง -> หอพัก",
@@ -191,14 +195,16 @@ export const travelRoutes: TravelRoute[] = [
     options: [
       createPublicOption({
         label: "Cheapest",
-        time: "60-75 นาที",
+        time: "60-90 นาที (ยังไม่รวมเวลาช่วง Grab/Bolt เข้าหอ)",
         minMinutes: 60,
-        maxMinutes: 75,
+        maxMinutes: 90,
         icon: "🚆",
         description:
-          "สายสีแดง: ดอนเมือง -> กรุงเทพอภิวัฒน์, MRT สายสีน้ำเงิน: บางซื่อ -> บางยี่ขัน แล้วเดิน/Grab/Bolt ต่อ",
-        perPersonCost: 33 + 27 + LAST_MILE_ESTIMATE,
-        costFormula: "33 + 27 + ค่าระยะสุดท้าย",
+          "รถไฟฟ้าสายสีแดง ดอนเมือง -> กรุงเทพอภิวัฒน์ ต่อ MRT สายสีน้ำเงิน บางซื่อ -> บางยี่ขัน แล้วต่อ Grab/Bolt เข้าหอพัก สกสค.",
+        perPersonCost: 33 + 27,
+        costFormula: "33 + 27 + ค่า Grab/Bolt หน้างาน",
+        unresolvedCostNote: "ยังไม่รวมค่า Grab/Bolt ช่วงจากสถานีบางยี่ขันไปหอพัก",
+        unresolvedTimeNote: "เวลาไปถึงจริงขึ้นกับรถช่วง Grab/Bolt หน้างาน",
         stationSteps: [
           {
             line: "สายสีแดง",
@@ -221,7 +227,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 30,
         maxMinutes: 45,
         icon: "🚕",
-        description: "นั่ง Grab ตรงจากสนามบิน",
+        description: "Grab Van ตรงจากสนามบินไปหอพัก",
         pricePerVan: 587,
         capacity: 10,
       }),
@@ -232,7 +238,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 30,
         maxMinutes: 45,
         icon: "⚡",
-        description: "นั่ง Bolt (โดยมากราคาต่ำกว่า Grab)",
+        description: "Bolt Van ตรงจากสนามบินไปหอพัก",
         pricePerVan: 488,
         capacity: 8,
       }),
@@ -241,7 +247,7 @@ export const travelRoutes: TravelRoute[] = [
   {
     id: "d1-dorm-all",
     day: 1,
-    dayLabel: "23 มีนาคม 2026",
+    dayLabel: "23/03/2569",
     from: "หอพัก (SKSC)",
     to: "ALL Robotics",
     title: "หอพัก -> ALL Robotics",
@@ -256,14 +262,16 @@ export const travelRoutes: TravelRoute[] = [
     options: [
       createPublicOption({
         label: "Cheapest",
-        time: "60-80 นาที",
+        time: "60-95 นาที (ยังไม่รวมเวลาช่วง Grab/Bolt เข้าสถานี)",
         minMinutes: 60,
-        maxMinutes: 80,
+        maxMinutes: 95,
         icon: "🚇",
         description:
-          "เดินทางช่วงแรกไปบางยี่ขัน, MRT ไปเตาปูน, สายสีม่วงไปศูนย์ราชการนนทบุรี, สายสีชมพูไปแจ้งวัฒนะ-ปากเกร็ด 28 แล้วเดินต่อ",
-        perPersonCost: LAST_MILE_ESTIMATE + 30 + 28 + 41,
-        costFormula: "ค่าระยะสุดท้าย + 30 + 28 + 41",
+          "นั่ง Grab/Bolt ไปบางยี่ขัน -> MRT สายสีน้ำเงิน ไปเตาปูน -> สายสีม่วง ไปศูนย์ราชการนนทบุรี -> สายสีชมพู ไปแจ้งวัฒนะ-ปากเกร็ด 28",
+        perPersonCost: 30 + 28 + 41,
+        costFormula: "ค่า Grab/Bolt หน้างาน + 30 + 28 + 41",
+        unresolvedCostNote: "ยังไม่รวมค่า Grab/Bolt จากหอพักไปสถานีบางยี่ขัน",
+        unresolvedTimeNote: "เวลาไปถึงจริงขึ้นกับรถช่วง Grab/Bolt หน้างาน",
         stationSteps: [
           {
             line: "ช่วงเชื่อมต่อ",
@@ -298,7 +306,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 50,
         icon: "🚕",
-        description: "รถตู้ Grab วิ่งตรงถึงบริษัท",
+        description: "Grab Van วิ่งตรงถึง ALL Robotics",
         pricePerVan: 539,
         capacity: 10,
       }),
@@ -309,7 +317,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 55,
         icon: "⚡",
-        description: "รถตู้ Bolt วิ่งตรงถึงบริษัท",
+        description: "Bolt Van วิ่งตรงถึง ALL Robotics",
         pricePerVan: 317,
         capacity: 6,
       }),
@@ -318,7 +326,7 @@ export const travelRoutes: TravelRoute[] = [
   {
     id: "d2-dorm-gosoft",
     day: 2,
-    dayLabel: "24 มีนาคม 2026",
+    dayLabel: "24/03/2569",
     from: "หอพัก (SKSC)",
     to: "Gosoft",
     title: "หอพัก -> Gosoft",
@@ -333,14 +341,16 @@ export const travelRoutes: TravelRoute[] = [
     options: [
       createPublicOption({
         label: "Cheapest",
-        time: "60-80 นาที",
+        time: "60-95 นาที (ยังไม่รวมเวลาช่วง Grab/Bolt เข้าสถานี)",
         minMinutes: 60,
-        maxMinutes: 80,
+        maxMinutes: 95,
         icon: "🚇",
         description:
-          "ใช้เส้นทางเดียวกับ ALL Robotics: บางยี่ขัน -> เตาปูน -> ศูนย์ราชการนนทบุรี -> แจ้งวัฒนะ-ปากเกร็ด 28",
-        perPersonCost: LAST_MILE_ESTIMATE + 30 + 28 + 41,
-        costFormula: "ค่าระยะสุดท้าย + 30 + 28 + 41",
+          "ใช้แผนเดียวกับเส้นทางไป ALL Robotics: Grab/Bolt ไปบางยี่ขัน -> MRT เตาปูน -> สายสีม่วง ศูนย์ราชการนนทบุรี -> สายสีชมพู แจ้งวัฒนะ-ปากเกร็ด 28",
+        perPersonCost: 30 + 28 + 41,
+        costFormula: "ค่า Grab/Bolt หน้างาน + 30 + 28 + 41",
+        unresolvedCostNote: "ยังไม่รวมค่า Grab/Bolt จากหอพักไปสถานีบางยี่ขัน",
+        unresolvedTimeNote: "เวลาไปถึงจริงขึ้นกับรถช่วง Grab/Bolt หน้างาน",
         stationSteps: [
           {
             line: "ช่วงเชื่อมต่อ",
@@ -375,7 +385,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 50,
         icon: "🚕",
-        description: "รถตู้ Grab วิ่งตรงถึงบริษัท",
+        description: "Grab Van วิ่งตรงถึง Gosoft",
         pricePerVan: 539,
         capacity: 10,
       }),
@@ -386,7 +396,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 55,
         icon: "⚡",
-        description: "รถตู้ Bolt วิ่งตรงถึงบริษัท",
+        description: "Bolt Van วิ่งตรงถึง Gosoft",
         pricePerVan: 317,
         capacity: 6,
       }),
@@ -395,7 +405,7 @@ export const travelRoutes: TravelRoute[] = [
   {
     id: "d2-gosoft-bitkub",
     day: 2,
-    dayLabel: "24 มีนาคม 2026",
+    dayLabel: "24/03/2569",
     from: "Gosoft",
     to: "Bitkub Lab",
     title: "Gosoft -> Bitkub Lab",
@@ -410,13 +420,16 @@ export const travelRoutes: TravelRoute[] = [
     options: [
       createPublicOption({
         label: "Cheapest",
-        time: "60-75 นาที",
-        minMinutes: 60,
-        maxMinutes: 75,
+        time: "65-100 นาที (ค่าโดยสารบางช่วงยังไม่ระบุ)",
+        minMinutes: 65,
+        maxMinutes: 100,
         icon: "🚆",
         description:
-          "สายสีชมพู: แจ้งวัฒนะ-ปากเกร็ด 28 -> หลักสี่, สายสีแดง: หลักสี่ -> กรุงเทพอภิวัฒน์, MRT สายสีน้ำเงิน: บางซื่อ -> คลองเตย",
-        perPersonCost: 96,
+          "สายสีชมพู แจ้งวัฒนะ-ปากเกร็ด 28 -> หลักสี่ ต่อสายสีแดง หลักสี่ -> กรุงเทพอภิวัฒน์ และต่อ MRT ไปคลองเตย",
+        perPersonCost: 0,
+        costFormula: "ค่ารถไฟฟ้าตามจริงหน้างาน (ยังไม่ระบุราคาย่อยในข้อมูลที่ให้มา)",
+        unresolvedCostNote: "ยังไม่มีราคาย่อยรายช่วงในชุดข้อมูลนี้ จึงคำนวณได้เฉพาะโครงเส้นทาง",
+        unresolvedTimeNote: "เวลาเดินทางจริงขึ้นกับรอขบวนและช่วงเปลี่ยนสาย",
         stationSteps: [
           {
             line: "สายสีชมพู",
@@ -444,7 +457,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 50,
         icon: "🚕",
-        description: "รถตู้ Grab วิ่งตรงถึงบริษัท",
+        description: "Grab Van วิ่งตรงถึง Bitkub",
         pricePerVan: 597,
         capacity: 10,
       }),
@@ -455,7 +468,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 55,
         icon: "⚡",
-        description: "รถตู้ Bolt วิ่งตรงถึงบริษัท",
+        description: "Bolt Van วิ่งตรงถึง Bitkub",
         pricePerVan: 357,
         capacity: 6,
       }),
@@ -464,7 +477,7 @@ export const travelRoutes: TravelRoute[] = [
   {
     id: "d3-dorm-eventthai",
     day: 3,
-    dayLabel: "25 มีนาคม 2026",
+    dayLabel: "25/07/2569",
     from: "หอพัก (SKSC)",
     to: "Eventthai Co., Ltd.",
     title: "หอพัก -> Eventthai",
@@ -479,14 +492,16 @@ export const travelRoutes: TravelRoute[] = [
     options: [
       createPublicOption({
         label: "Cheapest",
-        time: "60-75 นาที",
+        time: "60-95 นาที (ยังไม่รวมเวลาช่วง Grab/Bolt เข้าสถานี)",
         minMinutes: 60,
-        maxMinutes: 75,
+        maxMinutes: 95,
         icon: "🚇",
         description:
-          "บางยี่ขัน -> เตาปูน, สายสีม่วง -> ศูนย์ราชการนนทบุรี, สายสีชมพู -> IMPACT เมืองทองธานี",
-        perPersonCost: LAST_MILE_ESTIMATE + 30 + 28 + 45,
-        costFormula: "ค่าระยะสุดท้าย + 30 + 28 + 45",
+          "นั่ง Grab/Bolt ไปบางยี่ขัน -> MRT เตาปูน -> สายสีม่วง ศูนย์ราชการนนทบุรี -> สายสีชมพู ไปอิมแพ็คเมืองทองธานี",
+        perPersonCost: 30 + 28 + 45,
+        costFormula: "ค่า Grab/Bolt หน้างาน + 30 + 28 + 45",
+        unresolvedCostNote: "ยังไม่รวมค่า Grab/Bolt จากหอพักไปสถานีบางยี่ขัน",
+        unresolvedTimeNote: "เวลาไปถึงจริงขึ้นกับรถช่วง Grab/Bolt หน้างาน",
         stationSteps: [
           {
             line: "MRT สายสีน้ำเงิน",
@@ -514,7 +529,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 50,
         icon: "🚕",
-        description: "รถตู้ Grab วิ่งตรงถึงบริษัท",
+        description: "Grab Van วิ่งตรงถึง Eventthai",
         pricePerVan: 546,
         capacity: 10,
       }),
@@ -525,7 +540,7 @@ export const travelRoutes: TravelRoute[] = [
         minMinutes: 35,
         maxMinutes: 55,
         icon: "⚡",
-        description: "รถตู้ Bolt วิ่งตรงถึงบริษัท",
+        description: "Bolt Van วิ่งตรงถึง Eventthai",
         pricePerVan: 321,
         capacity: 6,
       }),
